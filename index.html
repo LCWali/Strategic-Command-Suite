@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- 
+🔱 PROJECT: STRATEGIC SUPREMACY | SOVEREIGN COMMAND KERNEL v4.1
+(c) 2024-2026 [YOUR NAME]. ALL RIGHTS RESERVED.
+PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED USE IS PROHIBITED.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Command | Sovereign Audit</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root { --obsidian: #050505; --gold: #bf953f; --blood: #8b0000; --terminal: #00ff41; --glass: rgba(255, 255, 255, 0.03); }
+        
+        body { 
+            background: var(--obsidian); color: #b0b0b0; font-family: 'Space Mono', monospace; 
+            margin: 0; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://transparenttextures.com');
+            opacity: 0.03; pointer-events: none;
+        }
+
+        .vessel { 
+            width: 100%; max-width: 500px; border: 1px solid var(--gold); 
+            padding: 35px; background: #000; box-shadow: 0 0 50px rgba(191, 149, 63, 0.1); position: relative;
+        }
+
+        .header { 
+            font-family: 'Cinzel', serif; color: var(--gold); text-align: center; 
+            border-bottom: 2px solid var(--gold); padding-bottom: 15px; margin-bottom: 30px; letter-spacing: 5px;
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #aa771c 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .module-label { 
+            color: var(--gold); font-size: 0.6rem; text-transform: uppercase; 
+            margin-bottom: 10px; display: block; border-left: 2px solid var(--gold); padding-left: 8px; margin-top: 25px;
+        }
+
+        select, input { 
+            width: 100%; background: #0a0a0a; border: 1px solid #222; 
+            color: #fff; padding: 12px; margin-bottom: 10px; font-family: 'Space Mono'; box-sizing: border-box;
+        }
+
+        .slider { width: 100%; accent-color: var(--gold); margin-bottom: 10px; }
+
+        .btn-exec { 
+            width: 100%; padding: 22px; background: transparent; border: 1px solid var(--gold); 
+            color: var(--gold); font-family: 'Cinzel', serif; cursor: pointer; font-weight: bold; letter-spacing: 3px; margin-top: 25px;
+        }
+
+        .btn-exec:hover { background: var(--gold); color: #000; }
+
+        #output, #post-mortem { display: none; margin-top: 40px; border-top: 1px solid #333; padding-top: 30px; animation: fadeIn 1s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .briefing-box { background: var(--glass); border-left: 4px solid var(--gold); padding: 25px; margin-bottom: 20px; }
+        .redacted { background: #333; color: #333; cursor: help; padding: 0 4px; }
+        
+        .sim-id-tray { 
+            font-size: 0.6rem; color: #444; text-align: center; border: 1px dashed #222; padding: 10px; margin-top: 15px;
+        }
+
+        .disclaimer { font-size: 0.55rem; color: #444; border: 1px solid #222; padding: 15px; margin-top: 20px; line-height: 1.6; text-align: justify; }
+        
+        .failure-text { color: var(--blood); font-weight: bold; border: 1px solid var(--blood); padding: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="vessel" id="kernel">
+    <!-- AUDIT MODE -->
+    <div id="audit-form">
+        <div class="header">SYSTEM AUDIT</div>
+
+        <span class="module-label">01 // TARGET ACTOR</span>
+        <input type="text" id="target" placeholder="e.g. PROJECT_LEAD_VARMA">
+
+        <span class="module-label">02 // ENGAGEMENT GEOMETRY</span>
+        <select id="archetype">
+            <option value="siege">THE SIEGE (Attrition)</option>
+            <option value="ambush">THE AMBUSH (Shock)</option>
+            <option value="insurgency">THE INSURGENCY (Subversion)</option>
+            <option value="maneuver">THE MANEUVER (Positioning)</option>
+        </select>
+
+        <span class="module-label">03 // FOG OF WAR (VISIBILITY: <span id="f-val">50</span>%)</span>
+        <input type="range" id="fog" min="10" max="100" value="50" class="slider" oninput="document.getElementById('f-val').innerText=this.value">
+
+        <span class="module-label">04 // MORAL AUTHORITY (JUSTIFICATION: <span id="m-val">5</span>/10)</span>
+        <input type="range" id="ma" min="1" max="10" value="5" class="slider" oninput="document.getElementById('m-val').innerText=this.value">
+
+        <button class="btn-exec" onclick="generateBriefing()">EXECUTE STOCHASTIC AUDIT</button>
+
+        <div id="output">
+            <div class="briefing-box">
+                <div id="result-text" style="font-size:0.85rem; line-height:1.6;"></div>
+            </div>
+            <div class="sim-id-tray">SIM_ID: <span id="sim-id" style="color:var(--terminal)"></span></div>
+            <div class="disclaimer" id="blame-report"></div>
+            <button class="btn-exec" style="font-size:0.7rem; padding:10px; margin-top:15px; border-color:#333;" onclick="initPostMortem()">RECONCILE FAILED ENGAGEMENT</button>
+        </div>
+    </div>
+
+    <!-- POST-MORTEM MODE -->
+    <div id="post-mortem" style="display:none;">
+        <div class="header" style="color:var(--blood); border-color:var(--blood);">POST-MORTEM</div>
+        <div class="failure-text">[FATAL ERROR] :: DEPLOYMENT DECOUPLED FROM MODEL</div>
+        <span class="module-label" style="color:var(--blood); border-color:var(--blood);">SELECT PRIMARY VARIANCE SOURCE</span>
+        <select id="variance">
+            <option value="fog">I overestimated my Visibility (Fog of War)</option>
+            <option value="ma">I overinflated my Moral Authority</option>
+            <option value="intel">The Target's Aggression was under-reported</option>
+        </select>
+        <button class="btn-exec" style="border-color:var(--blood); color:var(--blood);" onclick="location.reload()">RE-SUBMIT CORRECTED DATA</button>
+    </div>
+</div>
+
+<script>
+    function generateBriefing() {
+        const target = document.getElementById('target').value || "ENTITY";
+        const arch = document.getElementById('archetype').value;
+        const fog = document.getElementById('fog').value;
+        const ma = document.getElementById('ma').value;
+
+        // Deterministic Hashing for Re-roll Consistency
+        const fingerprint = `${target.toUpperCase()}-${arch}-${fog}-${ma}`;
+        let hash = 0;
+        for (let i = 0; i < fingerprint.length; i++) {
+            hash = ((hash << 5) - hash) + fingerprint.charCodeAt(i);
+            hash |= 0;
+        }
+        const simId = "0x" + Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
+        
+        document.getElementById('sim-id').innerText = simId;
+        document.getElementById('output').style.display = 'block';
+
+        // Redaction Logic
+        const redacted = fog < 40 ? '<span class="redacted">[REDACTED BY COMMAND]</span>' : 'the high ground';
+        
+        let strategy = `<strong>POLICY: ${ma < 5 ? 'DECEPTIVE SUBVERSION' : 'RIGHTEOUS FRONTAL STRIKE'}</strong><br><br>`;
+        strategy += `Regarding ${target}: Your visibility coefficient is ${fog}%. Sun Tzu: 'Ponder and deliberate before you make a move.' `;
+        strategy += `The optimal path requires ${ma > 7 ? 'transparency' : 'opacity'} to maintain ${redacted}.`;
+        
+        document.getElementById('result-text').innerHTML = strategy;
+        document.getElementById('blame-report').innerHTML = `
+            AUDIT REPORT: Results are a mathematical consequence of your reported ${ma}/10 Moral Authority and ${fog}% Visibility. 
+            Any tactical discrepancy is a **"User-State Reporting Error."** Simulation ${simId} is now immutable.
+        `;
+    }
+
+    function initPostMortem() {
+        document.getElementById('audit-form').style.display = 'none';
+        document.getElementById('post-mortem').style.display = 'block';
+    }
+</script>
+</body>
+</html>
